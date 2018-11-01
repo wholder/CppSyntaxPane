@@ -61,15 +61,14 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
   private static final Color  lineColor = new Color(0xCCCCEE);
   private Status status;
   private final static int    MAX_HEIGHT = Integer.MAX_VALUE - 1000000;
-  //  Text component this TextTextLineNumber component is in sync with
+  // Text component this TextTextLineNumber component is in sync with
   private JEditorPane         editor;
-  //  Keep history information to reduce the number of times the component needs to be repainted
+  // Keep history information to reduce the number of times the component needs to be repainted
   private int                 lastDigits;
   private int                 lastHeight;
   private int                 lastLine;
   private MouseListener       mouseListener;
-  // The formatting to use for displaying numbers.  Use in String.format(numbersFormat, line)
-  private String numbersFormat = "%3d";
+  private String              numbersFormat = "%3d";
 
   /**
    * Returns the JScrollPane that contains this EditorPane, or null if no

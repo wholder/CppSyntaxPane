@@ -87,23 +87,17 @@ public class DefaultSyntaxKit extends DefaultEditorKit implements ViewFactory {
    */
   public void addComponents (JEditorPane editorPane) {
     // install the components to the editor:
-    for (String c : components) {
-      installComponent(editorPane, c);
-    }
-  }
-
-  /**
-   * Creates a SyntaxComponent of the the given class name and installs it on the pane
-   */
-  private void installComponent (JEditorPane pane, String className) {
-    try {
-      Class<?> compClass = Class.forName(className);
-      SyntaxComponent comp = (SyntaxComponent) compClass.newInstance();
-      comp.install(pane);
-      editorComponents.computeIfAbsent(pane, k -> new ArrayList<>());
-      editorComponents.get(pane).add(comp);
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-      ex.printStackTrace();
+    for (String comp : components) {
+      try {
+        // Creates a SyntaxComponent of the the given class name and installs it on the pane
+        Class<?> compClass = Class.forName(comp);
+        SyntaxComponent comp1 = (SyntaxComponent) compClass.newInstance();
+        comp1.install(editorPane);
+        editorComponents.computeIfAbsent(editorPane, k -> new ArrayList<>());
+        editorComponents.get(editorPane).add(comp1);
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+        ex.printStackTrace();
+      }
     }
   }
 
@@ -121,7 +115,7 @@ public class DefaultSyntaxKit extends DefaultEditorKit implements ViewFactory {
     return KeyStroke.getKeyStroke(keyCode, modifier);
   }
 
-  private JMenuItem getMenuItem (JEditorPane ePane, String menuText, String actionCode, String actionClass, KeyStroke key) {
+  private JMenuItem menuItem(JEditorPane ePane, String menuText, String actionCode, String actionClass, KeyStroke key) {
     Action action = ePane.getActionMap().get(actionCode);
     JMenuItem menuItem = new JMenuItem(action);
     menuItem.setText(menuText);
@@ -150,23 +144,23 @@ public class DefaultSyntaxKit extends DefaultEditorKit implements ViewFactory {
 
   public JMenu getEditMenu (JEditorPane ePane) {
     JMenu menu = new JMenu("Edit");
-    menu.add(getMenuItem(ePane, "Cut",         "cut-to-clipboard",      null,                   getKey(KeyEvent.VK_X, CMD)));
-    menu.add(getMenuItem(ePane, "Copy",        "copy-to-clipboard",     null,                   getKey(KeyEvent.VK_C, CMD)));
-    menu.add(getMenuItem(ePane, "Paste",       "paste-from-clipboard",  null,                   getKey(KeyEvent.VK_V, CMD)));
+    menu.add(menuItem(ePane, "Cut",         "cut-to-clipboard",      null,                   getKey(KeyEvent.VK_X, CMD)));
+    menu.add(menuItem(ePane, "Copy",        "copy-to-clipboard",     null,                   getKey(KeyEvent.VK_C, CMD)));
+    menu.add(menuItem(ePane, "Paste",       "paste-from-clipboard",  null,                   getKey(KeyEvent.VK_V, CMD)));
     menu.addSeparator();
-    menu.add(getMenuItem(ePane, "Select All",  "select-all",            null,                   getKey(KeyEvent.VK_A, CMD)));
+    menu.add(menuItem(ePane, "Select All",  "select-all",            null,                   getKey(KeyEvent.VK_A, CMD)));
     menu.addSeparator();
-    menu.add(getMenuItem(ePane, "Undo",        "undo",                  "UndoAction",           getKey(KeyEvent.VK_Z, CMD)));
-    menu.add(getMenuItem(ePane, "Redo",        "redo",                  "RedoAction",           getKey(KeyEvent.VK_Z, CMD + SHIFT)));
+    menu.add(menuItem(ePane, "Undo",        "undo",                  "UndoAction",           getKey(KeyEvent.VK_Z, CMD)));
+    menu.add(menuItem(ePane, "Redo",        "redo",                  "RedoAction",           getKey(KeyEvent.VK_Z, CMD + SHIFT)));
     menu.addSeparator();
-    menu.add(getMenuItem(ePane, "Indent",      "indent",                "IndentAction",         getKey(KeyEvent.VK_TAB, 0)));
-    menu.add(getMenuItem(ePane, "Unindent",    "unindent",              "UnindentAction",       getKey(KeyEvent.VK_TAB, SHIFT)));
+    menu.add(menuItem(ePane, "Indent",      "indent",                "IndentAction",         getKey(KeyEvent.VK_TAB, 0)));
+    menu.add(menuItem(ePane, "Unindent",    "unindent",              "UnindentAction",       getKey(KeyEvent.VK_TAB, SHIFT)));
     menu.addSeparator();
-    menu.add(getMenuItem(ePane, "Find",        "find",                  "FindReplaceAction",    getKey(KeyEvent.VK_F, CMD)));
-    menu.add(getMenuItem(ePane, "Find Next",   "find-next",             "FindNextAction",       getKey(KeyEvent.VK_G, CMD)));
+    menu.add(menuItem(ePane, "Find",        "find",                  "FindReplaceAction",    getKey(KeyEvent.VK_F, CMD)));
+    menu.add(menuItem(ePane, "Find Next",   "find-next",             "FindNextAction",       getKey(KeyEvent.VK_G, CMD)));
     menu.addSeparator();
-    menu.add(getMenuItem(ePane, "Goto Line Number", "goto-line",        "GotoLineAction",       getKey(KeyEvent.VK_G, CTRL)));
-    menu.add(getMenuItem(ePane, "Toggle Comments", "toggle-comments",   "ToggleCommentsAction", getKey(KeyEvent.VK_SLASH, CTRL)));
+    menu.add(menuItem(ePane, "Goto Line Number", "goto-line",        "GotoLineAction",       getKey(KeyEvent.VK_G, CTRL)));
+    menu.add(menuItem(ePane, "Toggle Comments", "toggle-comments",   "ToggleCommentsAction", getKey(KeyEvent.VK_SLASH, CTRL)));
     return menu;
   }
 
