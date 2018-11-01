@@ -56,9 +56,9 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
   private static final int    DEFAULT_R_MARGIN = 7;
   private static final int    DEFAULT_L_MARGIN = 5;
   private static final int    MINIMUM_DISPLAY_DIGITS = 2;
-  private static final Color  foreColor = Color.decode("0x333300");
-  private static final Color  backColor = Color.decode("0xEEEEFF");
-  private static final Color  lineColor = Color.decode("0xCCCCEE");
+  private static final Color  foreColor = new Color(0x333300);
+  private static final Color  backColor = new Color(0xEEEEFF);
+  private static final Color  lineColor = new Color(0xCCCCEE);
   private Status status;
   private final static int MAX_HEIGHT = Integer.MAX_VALUE - 1000000;
   //  Text component this TextTextLineNumber component is in sync with
@@ -187,13 +187,10 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
   @Override
   public void caretUpdate (CaretEvent e) {
     //  Get the line the caret is positioned on
-
     int caretPosition = editor.getCaretPosition();
     Element root = editor.getDocument().getDefaultRootElement();
     int currentLine = root.getElementIndex(caretPosition);
-
     //  Need to repaint so the correct line number can be highlighted
-
     if (lastLine != currentLine) {
       repaint();
       lastLine = currentLine;
@@ -225,7 +222,6 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
   private void documentChanged () {
     //  Preferred size of the component has not been updated at the time
     //  the DocumentEvent is fired
-
     SwingUtilities.invokeLater(() -> {
       int preferredHeight = editor.getPreferredSize().height;
       //  Document change has caused a change in the number of lines.

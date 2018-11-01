@@ -39,20 +39,18 @@ class SyntaxStyles {
 
   private SyntaxStyles () {
     // These are the various Attributes for each TokenType.
-    // The keys of this map are the TokenType Strings, and the values are:
-    // color (hex, or integer), Font.Style attribute
-    // Style is one of: 0 = plain, 1 = bold, 2 = italic, 3 = bold/italic
-    styles.put(TokenType.valueOf("KEYWORD2"), new SyntaxStyle("0x3333ee, 3"));
-    styles.put(TokenType.valueOf("STRING"),   new SyntaxStyle("0xcc6600, 0"));
-    styles.put(TokenType.valueOf("TYPE2"),    new SyntaxStyle("0x000000, 1"));
-    styles.put(TokenType.valueOf("COMMENT"),  new SyntaxStyle("0x339933, 2"));
-    styles.put(TokenType.valueOf("KEYWORD"),  new SyntaxStyle("0x3333ee, 0"));
-    styles.put(TokenType.valueOf("NUMBER"),   new SyntaxStyle("0x999933, 1"));
-    styles.put(TokenType.valueOf("OPERATOR"), new SyntaxStyle("0x000000, 0"));
-    styles.put(TokenType.valueOf("TYPE"),     new SyntaxStyle("0x000000, 2"));
-    styles.put(TokenType.valueOf("DEFAULT"),  new SyntaxStyle("0x000000, 0"));
+    styles.put(TokenType.valueOf("KEYWORD2"), new SyntaxStyle(new Color(0x3333ee), Font.BOLD + Font.ITALIC));
+    styles.put(TokenType.valueOf("STRING"),   new SyntaxStyle(new Color(0xcc6600), Font.PLAIN));
+    styles.put(TokenType.valueOf("TYPE2"),    new SyntaxStyle(new Color(0x000000), Font.BOLD));
+    styles.put(TokenType.valueOf("COMMENT"),  new SyntaxStyle(new Color(0x339933), Font.ITALIC));
+    styles.put(TokenType.valueOf("KEYWORD"),  new SyntaxStyle(new Color(0x3333ee), Font.PLAIN));
+    styles.put(TokenType.valueOf("NUMBER"),   new SyntaxStyle(new Color(0x999933), Font.BOLD));
+    styles.put(TokenType.valueOf("OPERATOR"), new SyntaxStyle(new Color(0x000000), Font.PLAIN));
+    styles.put(TokenType.valueOf("TYPE"),     new SyntaxStyle(new Color(0x000000), Font.ITALIC));
+    styles.put(TokenType.valueOf("DEFAULT"),  new SyntaxStyle(new Color(0x000000), Font.PLAIN));
   }
 
+  // Font.PLAIN, Font.BOLD, Font.ITALIC, Font.BOLD + Font.ITALIC
   /**
    * Returns the default singleton
    */

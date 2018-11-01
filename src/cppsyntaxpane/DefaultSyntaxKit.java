@@ -52,8 +52,8 @@ import cppsyntaxpane.components.SyntaxComponent;
  * @author ayman, Hanns Holger Rutz
  */
 public class DefaultSyntaxKit extends DefaultEditorKit implements ViewFactory {
-  private static final Color  caretColor = Color.decode("0x000000");
-  private static final Color  selectionColor = Color.decode("0x99CCFF");
+  private static final Color  caretColor = new Color(0x000000);
+  private static final Color  selectionColor = new Color(0x99CCFF);
   private static final String[] components = {"cppsyntaxpane.components.PairsMarker", "cppsyntaxpane.components.LineNumbersRuler"};
   private final Lexer lexer;
   private final Map<JEditorPane, List<SyntaxComponent>> editorComponents = new WeakHashMap<>();
