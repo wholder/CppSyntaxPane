@@ -37,7 +37,7 @@ public class TestEditor extends JFrame {
       "/*\n" +
       " *  Block comment\n" +
       " */\n\n" +
-      "char[] str = \"string\";\n\n" +
+      "char str[] = \"Hello World!\";\n\n" +
       "void main () {\n" +
       "  // Line comment\n" +
       "  for (int ii = 0; ii < 2; ii++) {\n" +
