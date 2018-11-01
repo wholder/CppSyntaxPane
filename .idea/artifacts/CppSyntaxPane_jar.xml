@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="CppSyntaxPane:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/CppSyntaxPane_jar</output-path>
+    <root id="archive" name="CppSyntaxPane.jar">
+      <element id="module-output" name="CppSyntaxPane" />
+    </root>
+  </artifact>
+</component>
