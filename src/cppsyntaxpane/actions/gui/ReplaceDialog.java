@@ -18,8 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.text.JTextComponent;
 
 import cppsyntaxpane.actions.ActionUtils;
@@ -34,7 +32,7 @@ import cppsyntaxpane.util.SwingUtils;
  *
  * @author Ayman Al-Sairafi
  */
-public class ReplaceDialog extends JDialog implements CaretListener, EscapeListener {
+public class ReplaceDialog extends JDialog implements EscapeListener {
   private static Markers.SimpleMarker SEARCH_MARKER = new Markers.SimpleMarker(Color.YELLOW);
   private final JTextComponent        textComponent;
   private final DocumentSearchData    dsd;
@@ -54,11 +52,17 @@ public class ReplaceDialog extends JDialog implements CaretListener, EscapeListe
     this.textComponent = textComponent;
     this.dsd = dsd;
     initComponents();
-    textComponent.addCaretListener(this);
+    textComponent.addCaretListener(ev -> updateHighlights());
     setLocationRelativeTo(textComponent.getRootPane());
     getRootPane().setDefaultButton(nextButton);
     SwingUtils.addEscapeListener(this);
     replaceAllBbutton.setEnabled(textComponent.isEditable() && textComponent.isEnabled());
+  }
+
+
+  @Override
+  public void escapePressed () {
+    setVisible(false);
   }
 
   /**
@@ -96,7 +100,7 @@ public class ReplaceDialog extends JDialog implements CaretListener, EscapeListe
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.gridx = x;
     gbc.gridy = y;
-    gbc.anchor = (x == 0) ? GridBagConstraints.WEST : GridBagConstraints.EAST;
+    //gbc.anchor = (x == 0) ? GridBagConstraints.WEST : GridBagConstraints.EAST;
     gbc.fill = (x == 0) ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL;
     gbc.weightx = (new double[] {0.1, 0.7, 0.2})[x];
     gbc.ipady = 2;
@@ -122,25 +126,25 @@ public class ReplaceDialog extends JDialog implements CaretListener, EscapeListe
     nextButton = new JButton();
     nextButton.setMnemonic('N');
     nextButton.setText("Next");
-    nextButton.addActionListener(evt -> jBtnNextActionPerformed());
+    nextButton.addActionListener(evt -> nextActionPerformed());
 
     JButton prevButton = new JButton();
     prevButton.setMnemonic('P');
     prevButton.setText("Previous");
-    prevButton.addActionListener(evt -> jBtnPrevActionPerformed());
+    prevButton.addActionListener(evt -> prevActionPerformed());
 
     replaceAllBbutton = new JButton();
     replaceAllBbutton.setMnemonic('H');
     replaceAllBbutton.setText("Replace All");
-    replaceAllBbutton.addActionListener(evt -> jBtnReplaceAllActionPerformed());
+    replaceAllBbutton.addActionListener(evt -> replaceAllActionPerformed());
 
     highlightButton = new JToggleButton();
     highlightButton.setText("Highlight");
-    highlightButton.addActionListener(evt -> jTglHighlightActionPerformed());
+    highlightButton.addActionListener(evt -> highlightActionPerformed());
 
     JButton replaceButton = new JButton();
     replaceButton.setText("Replace");
-    replaceButton.addActionListener(evt -> jBtnReplaceActionPerformed());
+    replaceButton.addActionListener(evt -> replaceActionPerformed());
 
     JCheckBox wrapCheck = new JCheckBox();
     wrapCheck.setMnemonic('W');
@@ -189,11 +193,12 @@ public class ReplaceDialog extends JDialog implements CaretListener, EscapeListe
     fields.add(ignoreCase,        getGbc(1, 4));
     fields.add(highlightButton,   getGbc(2, 4));
 
+    fields.setPreferredSize(new Dimension(450, fields.getPreferredSize().height));
     add(fields);
     pack();
   }
 
-  private void jBtnNextActionPerformed () {
+  private void nextActionPerformed() {
     try {
       updateFinder();
       if (!dsd.doFindNext(textComponent)) {
@@ -205,7 +210,7 @@ public class ReplaceDialog extends JDialog implements CaretListener, EscapeListe
     }
   }
 
-  private void jBtnReplaceAllActionPerformed () {
+  private void replaceAllActionPerformed() {
     try {
       updateFinder();
       String replaceText = (String) replaceBox.getSelectedItem();
@@ -224,29 +229,19 @@ public class ReplaceDialog extends JDialog implements CaretListener, EscapeListe
     }
   }
 
-  private void jTglHighlightActionPerformed () {
+  private void highlightActionPerformed() {
     updateFinder();
     updateHighlights();
   }
 
-  private void jBtnPrevActionPerformed () {
+  private void prevActionPerformed() {
     updateFinder();
     dsd.doFindPrev(textComponent);
   }
 
-  private void jBtnReplaceActionPerformed () {
+  private void replaceActionPerformed() {
     highlightButton.setSelected(false);
     String replacement = replaceBox.getSelectedItem() == null ? "" : replaceBox.getSelectedItem().toString();
     dsd.doReplace(textComponent, replacement);
-  }
-
-  @Override
-  public void caretUpdate (CaretEvent e) {
-    updateHighlights();
-  }
-
-  @Override
-  public void escapePressed () {
-    setVisible(false);
   }
 }
