@@ -13,13 +13,7 @@
  */
 package cppsyntaxpane;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
@@ -30,11 +24,21 @@ import javax.swing.text.ViewFactory;
 
 public class SyntaxView extends PlainView {
 
-  private SyntaxStyle                DEFAULT_STYLE = SyntaxStyles.getInstance().getStyle(TokenType.DEFAULT);
-  private static final boolean       singleColorSelect = false;
-  private static int                 rightMarginColumn = 0;
-  private static Color               rightMarginColor = new Color(0xFF7777);
-  private static final SyntaxStyles  styles = SyntaxStyles.getInstance();
+  private SyntaxStyle                 DEFAULT_STYLE = SyntaxStyles.getInstance().getStyle(TokenType.DEFAULT);
+  private static final SyntaxStyles   styles = SyntaxStyles.getInstance();
+  private static RenderingHints       sysHints;
+
+  static {
+    sysHints = null;
+    try {
+      Toolkit toolkit = Toolkit.getDefaultToolkit();
+      @SuppressWarnings("unchecked")
+      Map<RenderingHints.Key, ?> map = (Map<RenderingHints.Key, ?>) toolkit.getDesktopProperty("awt.font.desktophints");
+      sysHints = new RenderingHints(map);
+    } catch (Throwable th) {
+      th.printStackTrace();
+    }
+  }
 
   /**
    * Construct a new view using the given configuration and prefix given
@@ -50,20 +54,12 @@ public class SyntaxView extends PlainView {
     Color saveColor = graphics.getColor();
     SyntaxDocument doc = (SyntaxDocument) getDocument();
     Segment segment = getLineBuffer();
-    // Draw the right margin first, if needed.  This way the text overlays
-    // the margin
-    if (rightMarginColumn > 0) {
-      int m_x = rightMarginColumn * graphics.getFontMetrics().charWidth('m');
-      int h = graphics.getFontMetrics().getHeight();
-      graphics.setColor(rightMarginColor);
-      graphics.drawLine(m_x, y, m_x, y - h);
-    }
     try {
       // Colour the parts
-      Iterator<Token> i = doc.getTokens(p0, p1);
+      Iterator<Token> it = doc.getTokens(p0, p1);
       int start = p0;
-      while (i.hasNext()) {
-        Token t = i.next();
+      while (it.hasNext()) {
+        Token t = it.next();
         // if there is a gap between the next token start and where we
         // should be starting (spaces not returned in tokens), then draw
         // it in the default type
@@ -105,19 +101,8 @@ public class SyntaxView extends PlainView {
   }
 
   @Override
-  protected int drawSelectedText (Graphics graphics, int x, int y, int p0, int p1)
-    throws BadLocationException {
-    if (singleColorSelect) {
-      if (rightMarginColumn > 0) {
-        int m_x = rightMarginColumn * graphics.getFontMetrics().charWidth('m');
-        int h = graphics.getFontMetrics().getHeight();
-        graphics.setColor(rightMarginColor);
-        graphics.drawLine(m_x, y, m_x, y - h);
-      }
-      return super.drawSelectedText(graphics, x, y, p0, p1);
-    } else {
-      return drawUnselectedText(graphics, x, y, p0, p1);
-    }
+  protected int drawSelectedText (Graphics graphics, int x, int y, int p0, int p1) {
+    return drawUnselectedText(graphics, x, y, p0, p1);
   }
 
   /**
@@ -133,22 +118,5 @@ public class SyntaxView extends PlainView {
     super.updateDamage(changes, a, f);
     java.awt.Component host = getContainer();
     host.repaint();
-  }
-
-  /**
-   * The values for the string key for Text Anti-Aliasing
-   */
-  private static RenderingHints sysHints;
-
-  static {
-    sysHints = null;
-    try {
-      Toolkit toolkit = Toolkit.getDefaultToolkit();
-      @SuppressWarnings("unchecked")
-      Map<RenderingHints.Key, ?> map = (Map<RenderingHints.Key, ?>) toolkit.getDesktopProperty("awt.font.desktophints");
-      sysHints = new RenderingHints(map);
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
   }
 }
