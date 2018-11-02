@@ -6,12 +6,14 @@
 
 #### Features Inherited from JSyntaxPane
 
+ + Syntax Coloring
  + Cut, Copy, Paste and Select All
  + Undo and Redo
  + Indent and Unindent
+ + Clock on Parenthesis or Braces to Highlight Pairs
  + Find and Find Next (with support for regex expression, ignore case, etc.)
  + Replace and Replace All
- + Search and Highlight
+ + Search for and Highlight all Matches
  + Goto Line Number
 
 You can run the class `TestEditor` to see **`CppSyntaxPane`** in action and an executable .jar file for **`CppSyntaxPane`** can be [downloaded here](https://github.com/wholder/CppSyntaxPane/tree/master/out/artifacts/CppSyntaxPane_jar).
