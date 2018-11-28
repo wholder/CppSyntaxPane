@@ -13,6 +13,8 @@
  */
 package cppsyntaxpane.actions;
 
+import javax.swing.*;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import cppsyntaxpane.SyntaxDocument;
@@ -50,6 +52,15 @@ public class IndentAction extends DefaultSyntaxAction {
       }
       target.replaceSelection(sb.toString());
       target.select(start, start + sb.length());
+    } else {
+      // If no text select, insert tab
+      int caretPos = target.getCaretPosition();
+      Document doc = target.getDocument();
+      try {
+        doc.insertString(caretPos, "\t", null);
+      } catch (Exception ex) {
+        ex.printStackTrace();
+      }
     }
   }
 }
