@@ -104,13 +104,6 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
     if (sp != null) {
       sp.setRowHeaderView(this);
     }
-    mouseListener = new MouseAdapter() {
-      @Override
-      public void mouseClicked (MouseEvent e) {
-        GotoLineDialog.showForEditor(editor);
-      }
-    };
-    addMouseListener(mouseListener);
     setPreferredWidth(false);    // required for toggle-lines to correctly repaint
     status = Status.INSTALLING;
   }
