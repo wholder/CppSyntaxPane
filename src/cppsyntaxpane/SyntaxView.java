@@ -59,18 +59,18 @@ public class SyntaxView extends PlainView {
       Iterator<Token> it = doc.getTokens(p0, p1);
       int start = p0;
       while (it.hasNext()) {
-        Token t = it.next();
+        Token tok = it.next();
         // if there is a gap between the next token start and where we
         // should be starting (spaces not returned in tokens), then draw
         // it in the default type
-        if (start < t.start) {
-          doc.getText(start, t.start - start, segment);
+        if (start < tok.start) {
+          doc.getText(start, tok.start - start, segment);
           x = DEFAULT_STYLE.drawText(segment, x, y, graphics, this, start);
         }
         // t and s are the actual start and length of what we should
         // put on the screen.  assume these are the whole token....
-        int l = t.length;
-        int s = t.start;
+        int l = tok.length;
+        int s = tok.start;
         // ... unless the token starts before p0:
         if (s < p0) {
           // token is before what is requested. adgust the length and s
@@ -83,8 +83,8 @@ public class SyntaxView extends PlainView {
           l = p1 - s;
         }
         doc.getText(s, l, segment);
-        x = styles.drawText(segment, x, y, graphics, this, t);
-        start = t.end();
+        x = styles.drawText(segment, x, y, graphics, this, tok);
+        start = tok.end();
       }
       // now for any remaining text not tokenized:
       if (start < p1) {

@@ -31,50 +31,49 @@ import cppsyntaxpane.TokenType;
 import javax.swing.text.Segment;
 import java.io.CharArrayReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class CppLexer implements Lexer {
-  private static final int YYEOF = -1;            //  denotes the end of file
-  private static final int ZZ_BUFFERSIZE = 16384; // initial size of the lookahead buffer
-  private static final int YYINITIAL = 0;         // lexical states
-  private int offset;
-
+  private static final int  EOF = -1;               //  denotes the end of file
+  private static final int  BUFFERSIZE = 16384;     // initial size of the lookahead buffer
+  private static final int  INITIAL = 0;            // lexical states
+  private int               offset;
 
   /**
-   * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
-   * ZZ_LEXSTATE[l+1] is the state in the DFA for the lexical state l
+   * LEXSTATE[l] is the state in the DFA for the lexical state l
+   * LEXSTATE[l+1] is the state in the DFA for the lexical state l
    * at the beginning of a line
    * l is of the form l = 2*k, k a non negative integer
    */
-  private static final int ZZ_LEXSTATE[] = {
-    0, 0
+  private static final int[] LEXSTATE = {
+      0, 0
   };
 
   /**
-   * Create and return a Token of given type.  start is obtained from {@link #yychar()}
-   * and length from {@link #yylength()}
+   * Create and return a Token of given type.  start is obtained from {@link #getCharacters()}
+   * and length from {@link #length()}
    * offset is added to start
    */
-  protected Token token(TokenType type) {
-    return new Token(type, yychar() + offset, yylength());
+  protected Token token (TokenType type) {
+    return new Token(type, getCharacters() + offset, length());
   }
 
   /**
    * Create and return a Token of given type and pairValue.
-   * start is obtained from {@link #yychar()}
-   * and length from {@link #yylength()}
+   * start is obtained from {@link #getCharacters()}
+   * and length from {@link #length()}
    * offset is added to start
    */
-  protected Token token(TokenType type, int pairValue) {
-    return new Token(type, yychar() + offset, yylength(), (byte) pairValue);
+  protected Token token (TokenType type, int pairValue) {
+    return new Token(type, getCharacters() + offset, length(), (byte) pairValue);
   }
 
-  public void parse(Segment segment, int ofst, List<Token> tokens) {
+  public void parse (Segment segment, int ofst, List<Token> tokens) {
     try {
-      CharArrayReader reader = new CharArrayReader(segment.array, segment.offset, segment.count);
-      yyreset(reader);
+      resetInput(new CharArrayReader(segment.array, segment.offset, segment.count));
       this.offset = ofst;
-      for (Token tok = yylex(); tok != null; tok = yylex()) {
+      for (Token tok = lexScan(); tok != null; tok = lexScan()) {
         tokens.add(tok);
       }
     } catch (IOException ex) {
@@ -85,7 +84,7 @@ public final class CppLexer implements Lexer {
   /**
    * Translates characters to character classes
    */
-  private static final String ZZ_CMAP_PACKED =
+  private static final String CMAP_PACKED =
     "\11\10\1\0\1\2\2\0\1\1\16\10\5\0\1\66\1\55\1\5" +
       "\1\6\1\66\1\66\1\57\1\60\1\61\1\4\1\32\1\66\1\32" +
       "\1\27\1\3\1\12\7\17\2\11\1\66\1\66\1\70\1\66\1\67" +
@@ -205,14 +204,31 @@ public final class CppLexer implements Lexer {
   /**
    * Translates characters to character classes
    */
-  private static final char[] ZZ_CMAP = zzUnpackCMap();
+  private static final char[] CMAP = unpackCMap();
+
+  /**
+   * Unpacks the compressed character translation table.
+   *
+   * @return the unpacked character translation table
+   */
+  private static char[] unpackCMap() {
+    StringBuilder buf = new StringBuilder();
+    int ii = 0;  /* index in packed string  */
+    while (ii < CppLexer.CMAP_PACKED.length()) {
+      int count = CppLexer.CMAP_PACKED.charAt(ii++);
+      char value = CppLexer.CMAP_PACKED.charAt(ii++);
+      do {
+        buf.append(value);
+      } while (--count > 0);
+    }
+    return buf.toString().toCharArray();
+  }
+
 
   /**
    * Translates DFA states to action switch labels.
    */
-  private static final int[] ZZ_ACTION = zzUnpackAction();
-
-  private static final String ZZ_ACTION_PACKED_0 =
+  private static final String ACTION_PACKED =
     "\1\0\1\1\2\2\1\3\1\4\1\3\2\5\6\4" +
       "\1\2\16\4\2\1\1\6\1\7\1\10\1\11\1\12" +
       "\1\13\2\2\1\14\1\0\1\3\6\0\7\5\1\0" +
@@ -222,29 +238,26 @@ public final class CppLexer implements Lexer {
       "\12\0\32\4\1\5\16\4\1\0\1\17\4\0\1\4" +
       "\1\2\25\4\3\0\5\4\1\3\10\4";
 
-  private static int[] zzUnpackAction () {
-    int[] result = new int[290];
-    int offset = 0;
+  private static final int[] ACTION = unPackString(ACTION_PACKED);
+
+  private static int[] unPackString (String str) {
+    List<Integer> result = new ArrayList<>();
     int ii = 0;       /* index in packed string  */
-    int jj = offset;  /* index in unpacked array */
-    int kk = ZZ_ACTION_PACKED_0.length();
+    int kk = str.length();
     while (ii < kk) {
-      int count = ZZ_ACTION_PACKED_0.charAt(ii++);
-      int value = ZZ_ACTION_PACKED_0.charAt(ii++);
+      int count = str.charAt(ii++);
+      int value = str.charAt(ii++);
       do {
-        result[jj++] = value;
+        result.add(value);
       } while (--count > 0);
     }
-    return result;
+    return result.stream().mapToInt(i->i).toArray();
   }
-
 
   /**
    * Translates a state to a row index in the transition table
    */
-  private static final int[] ZZ_ROWMAP = zzUnpackRowMap();
-
-  private static final String ZZ_ROWMAP_PACKED_0 =
+  private static final String ROWMAP_PACKED =
     "\0\0\0\72\0\164\0\72\0\256\0\350\0\u0122\0\u015c" +
       "\0\u0196\0\u01d0\0\u020a\0\u0244\0\u027e\0\u02b8\0\u02f2\0\u032c" +
       "\0\u0366\0\u03a0\0\u03da\0\u0414\0\u044e\0\u0488\0\u04c2\0\u04fc" +
@@ -283,25 +296,24 @@ public final class CppLexer implements Lexer {
       "\0\u3b22\0\u3b5c\0\u3b96\0\u3bd0\0\u3c0a\0\u3c44\0\u3c7e\0\u3cb8" +
       "\0\u3cf2\0\u3d2c";
 
-  private static int[] zzUnpackRowMap () {
-    int[] result = new int[290];
-    int offset = 0;
+  private static final int[] ROWMAP = unpackRowMap();
+
+  private static int[] unpackRowMap() {
+    List<Integer> result = new ArrayList<>();
     int ii = 0;  /* index in packed string  */
-    int jj = offset;  /* index in unpacked array */
-    int kk = ZZ_ROWMAP_PACKED_0.length();
+    int kk = ROWMAP_PACKED.length();
     while (ii < kk) {
-      int high = ZZ_ROWMAP_PACKED_0.charAt(ii++) << 16;
-      result[jj++] = high | ZZ_ROWMAP_PACKED_0.charAt(ii++);
+      int high = ROWMAP_PACKED.charAt(ii++) << 16;
+      result.add(high | ROWMAP_PACKED.charAt(ii++));
+
     }
-    return result;
+    return result.stream().mapToInt(i->i).toArray();
   }
 
   /**
    * The transition table of the DFA
    */
-  private static final int[] ZZ_TRANS = zzUnpackTrans();
-
-  private static final String ZZ_TRANS_PACKED_0 =
+  private static final String TRANS_PACKED =
     "\3\2\1\3\1\4\1\5\1\6\1\7\1\2\1\10" +
       "\1\11\1\12\1\7\1\13\1\7\1\10\1\14\1\7" +
       "\1\15\1\7\1\16\1\7\1\17\1\20\1\21\1\7" +
@@ -626,109 +638,93 @@ public final class CppLexer implements Lexer {
       "\1\0\2\6\1\0\22\6\14\0\1\6\6\0\21\6" +
       "\1\0\2\6\1\0\14\6\1\146\5\6\14\0\1\6";
 
-  private static int[] zzUnpackTrans () {
-    int[] result = new int[15718];
-    int offset = 0;
+  private static final int[] TRANS = unpackTrans();
+
+  private static int[] unpackTrans() {
+    List<Integer> result = new ArrayList<>();
     int ii = 0;       /* index in packed string  */
-    int jj = offset;  /* index in unpacked array */
-    int kk = ZZ_TRANS_PACKED_0.length();
+    int kk = TRANS_PACKED.length();
     while (ii < kk) {
-      int count = ZZ_TRANS_PACKED_0.charAt(ii++);
-      int value = ZZ_TRANS_PACKED_0.charAt(ii++);
+      int count = TRANS_PACKED.charAt(ii++);
+      int value = TRANS_PACKED.charAt(ii++);
       value--;
       do {
-        result[jj++] = value;
+        result.add(value);
       } while (--count > 0);
     }
-    return result;
+    return result.stream().mapToInt(i->i).toArray();
   }
 
 
   /* error codes */
-  private static final int ZZ_UNKNOWN_ERROR = 0;
-  private static final int ZZ_NO_MATCH = 1;
+  private static final int UNKNOWN_ERROR = 0;
+  private static final int NO_MATCH = 1;
 
   /* error messages for the codes above */
-  private static final String ZZ_ERROR_MSG[] = {
+  private static final String[] ERROR_MSG = {
     "Unkown internal scanner error",
     "Error: could not match input",
     "Error: pushback value was too large"
   };
 
   /**
-   * ZZ_ATTRIBUTE[aState] contains the attributes of state <code>aState</code>
+   * ATTRIBUTE[aState] contains the attributes of state <code>aState</code>
    */
-  private static final int[] ZZ_ATTRIBUTE = zzUnpackAttribute();
-
-  private static final String ZZ_ATTRIBUTE_PACKED_0 =
+  private static final String ATTRIBUTE_PACKED =
     "\1\0\1\11\1\1\1\11\34\1\6\11\3\1\1\0" +
       "\1\1\6\0\4\1\1\11\2\1\1\0\67\1\1\0" +
       "\1\11\3\0\1\1\1\11\11\0\1\1\3\0\1\1" +
       "\1\0\73\1\12\0\51\1\1\0\1\11\4\0\27\1" +
       "\3\0\16\1";
 
-  private static int[] zzUnpackAttribute () {
-    int[] result = new int[290];
-    int offset = 0;
-    int ii = 0;       /* index in packed string  */
-    int jj = offset;  /* index in unpacked array */
-    int kk = ZZ_ATTRIBUTE_PACKED_0.length();
-    while (ii < kk) {
-      int count = ZZ_ATTRIBUTE_PACKED_0.charAt(ii++);
-      int value = ZZ_ATTRIBUTE_PACKED_0.charAt(ii++);
-      do {
-        result[jj++] = value;
-      } while (--count > 0);
-    }
-    return result;
-  }
+  private static final int[] ATTRIBUTE = unPackString(ATTRIBUTE_PACKED);
 
   /**
    * the input device
    */
-  private java.io.Reader zzReader;
+  private java.io.Reader reader;
 
   /**
    * the current lexical state
    */
-  private int zzLexicalState = YYINITIAL;
+  private int lexicalState = INITIAL;
 
   /**
    * this buffer contains the current text to be matched and is
    * the source of the yytext() string
    */
-  private char zzBuffer[] = new char[ZZ_BUFFERSIZE];
+  private char[] lexBuffer = new char[BUFFERSIZE];
 
   /**
    * the textposition at the last accepting state
    */
-  private int zzMarkedPos;
+  private int lexMarkedPos;
 
   /**
    * the current text position in the buffer
    */
-  private int zzCurrentPos;
+  private int lexCurrentPos;
 
   /**
    * startRead marks the beginning of the yytext() string in the buffer
    */
-  private int zzStartRead;
+  private int lexStartRead;
 
   /**
    * endRead marks the last character in the buffer, that has been read
    * from input
    */
-  private int zzEndRead;
+  private int lexEndRead;
 
   /**
    * the number of characters up to the start of the matched text
    */
-  private int yychar;
+  private int characters;
 
   /**
-   * zzAtEOF == true <=> the scanner is at the EOF
+   * atEOF == true <=> the scanner is at the EOF
    */
-  private boolean zzAtEOF;
+  private boolean atEOF;
 
   /* user code: */
 
@@ -736,34 +732,13 @@ public final class CppLexer implements Lexer {
     super();
   }
 
-  private int yychar () {
-    return yychar;
+  private int getCharacters () {
+    return characters;
   }
 
   private static final byte PARAN = 1;
   private static final byte BRACKET = 2;
   private static final byte CURLY = 3;
-
-
-  /**
-   * Unpacks the compressed character translation table.
-   *
-   * @return the unpacked character translation table
-   */
-  private static char[] zzUnpackCMap () {
-    char[] map = new char[0x10000];
-    int ii = 0;  /* index in packed string  */
-    int jj = 0;  /* index in unpacked array */
-    while (ii < 2292) {
-      int count = CppLexer.ZZ_CMAP_PACKED.charAt(ii++);
-      char value = CppLexer.ZZ_CMAP_PACKED.charAt(ii++);
-      do {
-        map[jj++] = value;
-      } while (--count > 0);
-    }
-    return map;
-  }
-
 
   /**
    * Refills the input buffer.
@@ -771,39 +746,39 @@ public final class CppLexer implements Lexer {
    * @return <code>false</code>, iff there was new input.
    * @throws java.io.IOException if any I/O-Error occurs
    */
-  private boolean zzRefill () throws java.io.IOException {
+  private boolean refill () throws java.io.IOException {
     /* first: make room (if you can) */
-    if (zzStartRead > 0) {
-      System.arraycopy(zzBuffer, zzStartRead,
-        zzBuffer, 0,
-        zzEndRead - zzStartRead);
+    if (lexStartRead > 0) {
+      System.arraycopy(lexBuffer, lexStartRead,
+          lexBuffer, 0,
+        lexEndRead - lexStartRead);
 
       /* translate stored positions */
-      zzEndRead -= zzStartRead;
-      zzCurrentPos -= zzStartRead;
-      zzMarkedPos -= zzStartRead;
-      zzStartRead = 0;
+      lexEndRead -= lexStartRead;
+      lexCurrentPos -= lexStartRead;
+      lexMarkedPos -= lexStartRead;
+      lexStartRead = 0;
     }
     /* is the buffer big enough? */
-    if (zzCurrentPos >= zzBuffer.length) {
+    if (lexCurrentPos >= lexBuffer.length) {
       /* if not: blow it up */
-      char newBuffer[] = new char[zzCurrentPos * 2];
-      System.arraycopy(zzBuffer, 0, newBuffer, 0, zzBuffer.length);
-      zzBuffer = newBuffer;
+      char[] newBuffer = new char[lexCurrentPos * 2];
+      System.arraycopy(lexBuffer, 0, newBuffer, 0, lexBuffer.length);
+      lexBuffer = newBuffer;
     }
     /* finally: fill the buffer with new input */
-    int numRead = zzReader.read(zzBuffer, zzEndRead, zzBuffer.length - zzEndRead);
+    int numRead = reader.read(lexBuffer, lexEndRead, lexBuffer.length - lexEndRead);
     if (numRead > 0) {
-      zzEndRead += numRead;
+      lexEndRead += numRead;
       return false;
     }
     // unlikely but not impossible: read 0 characters, but not at end of stream
     if (numRead == 0) {
-      int c = zzReader.read();
+      int c = reader.read();
       if (c == -1) {
         return true;
       } else {
-        zzBuffer[zzEndRead++] = (char) c;
+        lexBuffer[lexEndRead++] = (char) c;
         return false;
       }
     }
@@ -822,24 +797,24 @@ public final class CppLexer implements Lexer {
    *
    * @param reader the new input stream
    */
-  private void yyreset (java.io.Reader reader) {
-    zzReader = reader;
-    zzAtEOF = false;
+  private void resetInput (java.io.Reader reader) {
+    this.reader = reader;
+    atEOF = false;
     /*
      * denotes if the user-EOF-code has already been executed
      */
-    zzEndRead = zzStartRead = 0;
-    zzCurrentPos = zzMarkedPos = 0;
-    yychar = 0;
-    zzLexicalState = YYINITIAL;
+    lexEndRead = lexStartRead = 0;
+    lexCurrentPos = lexMarkedPos = 0;
+    characters = 0;
+    lexicalState = INITIAL;
   }
 
 
   /**
    * Returns the length of the matched text region.
    */
-  private int yylength () {
-    return zzMarkedPos - zzStartRead;
+  private int length () {
+    return lexMarkedPos - lexStartRead;
   }
 
 
@@ -856,12 +831,12 @@ public final class CppLexer implements Lexer {
    * in error fallback rules.
    *
    */
-  private void zzScanError () {
+  private void scanError() {
     String message;
     try {
-      message = ZZ_ERROR_MSG[CppLexer.ZZ_NO_MATCH];
+      message = ERROR_MSG[CppLexer.NO_MATCH];
     } catch (ArrayIndexOutOfBoundsException e) {
-      message = ZZ_ERROR_MSG[ZZ_UNKNOWN_ERROR];
+      message = ERROR_MSG[UNKNOWN_ERROR];
     }
     throw new Error(message);
   }
@@ -874,68 +849,66 @@ public final class CppLexer implements Lexer {
    * @return the next token
    * @throws java.io.IOException if any I/O-Error occurs
    */
-  private Token yylex () throws java.io.IOException {
-    int zzInput;
-    int zzAction;
+  private Token lexScan () throws java.io.IOException {
+    int input;
+    int action;
     // cached fields:
-    int zzCurrentPosL;
-    int zzMarkedPosL;
-    int zzEndReadL = zzEndRead;
-    char[] zzBufferL = zzBuffer;
+    int currentPosition;
+    int markedPosition;
+    int endRead = lexEndRead;
+    char[] lexBufferTmp = lexBuffer;
     while (true) {
-      zzMarkedPosL = zzMarkedPos;
-      yychar += zzMarkedPosL - zzStartRead;
-      zzAction = -1;
-      zzCurrentPosL = zzCurrentPos = zzStartRead = zzMarkedPosL;
+      markedPosition = lexMarkedPos;
+      characters += markedPosition - lexStartRead;
+      action = -1;
+      currentPosition = lexCurrentPos = lexStartRead = markedPosition;
       /*
        * the current state of the DFA
        */
-      int zzState = ZZ_LEXSTATE[zzLexicalState];
-      zzForAction:
+      int state = LEXSTATE[lexicalState];
+      ForAction:
       {
         while (true) {
-          if (zzCurrentPosL < zzEndReadL) {
-            zzInput = zzBufferL[zzCurrentPosL++];
-          } else if (zzAtEOF) {
-            zzInput = YYEOF;
-            break zzForAction;
+          if (currentPosition < endRead) {
+            input = lexBufferTmp[currentPosition++];
+          } else if (atEOF) {
+            input = EOF;
+            break ForAction;
           } else {
             // store back cached positions
-            zzCurrentPos = zzCurrentPosL;
-            zzMarkedPos = zzMarkedPosL;
-            boolean eof = zzRefill();
+            lexCurrentPos = currentPosition;
+            lexMarkedPos = markedPosition;
+            boolean eof = refill();
             // get translated positions and possibly new buffer
-            zzCurrentPosL = zzCurrentPos;
-            zzMarkedPosL = zzMarkedPos;
-            zzBufferL = zzBuffer;
-            zzEndReadL = zzEndRead;
+            currentPosition = lexCurrentPos;
+            markedPosition = lexMarkedPos;
+            lexBufferTmp = lexBuffer;
+            endRead = lexEndRead;
             if (eof) {
-              zzInput = YYEOF;
-              break zzForAction;
+              input = EOF;
+              break ForAction;
             } else {
-              zzInput = zzBufferL[zzCurrentPosL++];
+              input = lexBufferTmp[currentPosition++];
             }
           }
-          int zzNext = ZZ_TRANS[ZZ_ROWMAP[zzState] + ZZ_CMAP[zzInput]];
-          if (zzNext == -1) {
-            break zzForAction;
+          int next = TRANS[ROWMAP[state] + CMAP[input]];
+          if (next == -1) {
+            break ForAction;
           }
-          zzState = zzNext;
-
-          int zzAttributes = ZZ_ATTRIBUTE[zzState];
-          if ((zzAttributes & 1) == 1) {
-            zzAction = zzState;
-            zzMarkedPosL = zzCurrentPosL;
-            if ((zzAttributes & 8) == 8) {
-              break zzForAction;
+          state = next;
+          int attributes = ATTRIBUTE[state];
+          if ((attributes & 1) == 1) {
+            action = state;
+            markedPosition = currentPosition;
+            if ((attributes & 8) == 8) {
+              break ForAction;
             }
           }
         }
       }
       // store back cached position
-      zzMarkedPos = zzMarkedPosL;
-
-      switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
+      lexMarkedPos = markedPosition;
+      switch (action < 0 ? action : ACTION[action]) {
       case 16: {
         return token(TokenType.TYPE2);
       }
@@ -1015,11 +988,11 @@ public final class CppLexer implements Lexer {
       case 32:
         break;
       default:
-        if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
-          zzAtEOF = true;
+        if (input == EOF && lexStartRead == lexCurrentPos) {
+          atEOF = true;
           return null;
         } else {
-          zzScanError();
+          scanError();
         }
       }
     }
