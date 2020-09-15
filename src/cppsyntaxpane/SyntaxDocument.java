@@ -128,7 +128,7 @@ public class SyntaxDocument extends PlainDocument {
         if (ndx < 0) {
           // so, start from one before the token where we should be...
           // -1 to get the location, and another -1 to go back..
-          ndx = (-ndx - 1 - 1 < 0) ? 0 : (-ndx - 1 - 1);
+          ndx = Math.max(-ndx - 1 - 1, 0);
           Token t = tokens.get(ndx);
           // if the prev token does not overlap, then advance one
           if (t.end() <= start) {

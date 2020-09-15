@@ -15,8 +15,6 @@
 package cppsyntaxpane.components;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -35,7 +33,6 @@ import javax.swing.text.JTextComponent;
 import cppsyntaxpane.SyntaxDocument;
 import cppsyntaxpane.SyntaxView;
 import cppsyntaxpane.actions.ActionUtils;
-import cppsyntaxpane.actions.gui.GotoLineDialog;
 
 /**
  * This class will display line numbers for a related text component. The text
@@ -166,10 +163,8 @@ public class LineNumbersRuler extends JPanel implements CaretListener, DocumentL
         g.setColor(lineColor);
         g.fillRect(0, y /* - lh + fontMetrics.getDescent() - 1 */, getWidth(), lh);
         g.setColor(getForeground());
-        g.drawString(lineNumber, insets.left, yt);
-      } else {
-        g.drawString(lineNumber, insets.left, yt);
       }
+      g.drawString(lineNumber, insets.left, yt);
     }
   }
 
